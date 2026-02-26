@@ -159,7 +159,17 @@ def search_songs(
     query: str,
     field: str = "artist",
 ) -> List[Song]:
-    """Return songs matching the query on a given field."""
+    """Return songs matching the query on a given field.
+
+    The search is **case‑insensitive** and performs a substring check.  The
+    original implementation tested whether the song value was contained in the
+    query string (`value in q`), which meant the user had to type the full
+    artist name (including any leading words) in order to match.  For example
+    searching "weeknd" would not match "the weeknd".
+
+    We now reverse the comparison so typing any part of the artist (or other
+    field) works as expected.
+    """
     if not query:
         return songs
 
@@ -167,8 +177,10 @@ def search_songs(
     filtered: List[Song] = []
 
     for song in songs:
+        # grab the requested field and normalize it for comparison
         value = str(song.get(field, "")).lower()
-        if value and value in q:
+        # include the song if the query text appears anywhere in the value
+        if value and q in value:
             filtered.append(song)
 
     return filtered
